@@ -1,0 +1,118 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <link
+      rel="stylesheet"
+      href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/4.7.0/css/font-awesome.min.css"
+    />
+    <link rel="stylesheet" href="css/styles.css" />
+    <title>Document</title>
+  </head>
+  <header>
+    <h1 class="main-text">Get Country IP</h1>
+  </header>
+  <body>
+    <div>
+      <input
+        type="text"
+        name="ip-address"
+        id="ipAddress"
+        placeholder="8.8.8.8"
+      />
+      <button id="searchIp" class="button" type="submit"><i class="fa fa-search" aria-hidden="true"></i>
+        Get Country</button>
+    </div>
+    <div class="separator"></div>
+
+    <div id="ipSearch" class="no-show">
+      <p id="cn" class="country-info">country</p>
+      <span><p id="cc" class="country-info">cc</p></span>
+      <p id="ipShow" class="country-info">IP</p>
+      <img id="flag" src="" width="200" height="100" />
+    </div>
+    <div class="separator"></div>
+    <section class="container">
+      <div class="left">
+        <ul id="userList"></ul>
+      </div>
+      <div id="right-panel" class="right no-show">
+        <span><p id="displayName"></p></span><span><p id="firstName"></p></span>
+
+        <p id="lastName"></p>
+
+        <p id="countryName"></p>
+        <p id="countryCode"></p>
+        <p id="userIpAddress"></p>
+        <img id="countryFlag" src="" width="200" height="100" />
+      </div>
+    </section>
+
+    <script src="js/jquery-3.5.1.min.js"></script>
+    <script type="text/javascript">
+      $(document).ready(function () {
+        $("ul").on("click", "li", function () {
+          let userId = $(this).attr("id");
+          console.log($(this).attr("id"));
+
+          $(this).addClass("active").siblings().removeClass("active");
+
+          $.get(
+            `https://api.queritel.com/api/test-lab/hernandez/get_user_detail.php?display_name=${userId}`
+          ).done(function (data, status) {
+            $("#right-panel").addClass("show").removeClass("no-show");
+            let jsonData = JSON.parse(data);
+            console.log("USERDATA ", data);
+            $("#firstName").text(jsonData.first_name);
+            $("#lastName").text(jsonData.last_name);
+            $("#displayName").text(jsonData.display_name);
+            $("#countryName").text(jsonData.country_name);
+            $("#countryCode").text(jsonData.country_code);
+            $("#countryFlag").attr("src", jsonData.country_flag);
+            $("#userIpAddress").text(jsonData.ip_address);
+          });
+        });
+
+        $.get(
+          `https://api.queritel.com/api/test-lab/hernandez/get_user_list.php`
+          // `https://api.queritel.com/api/test-lab/hernandez/query_ip.php?ip=${ip}`
+        ).done(function (data, status) {
+          let jsonData = JSON.parse(data);
+
+          jsonData.map(function (element) {
+            $("#userList").append(
+              `<li class="user-name" id=${element.display_name}>${
+                element.first_name + " " + element.last_name
+              }</li>`
+            );
+
+            console.log(element.display_name);
+          });
+
+          console.log("Data: " + JSON.parse(data) + "\nStatus: " + status);
+        });
+
+        $("#searchIp").click(function () {
+          let ip = $("#ipAddress").val() ? $("#ipAddress").val() : "my_ip";
+          $("#ipSearch").removeClass("no-show").addClass("show");
+          $.get(
+            `https://api.queritel.com/api/test-lab/hernandez/query_ip.php?ip=${ip}`
+          ).done(function (data, status) {
+            let jsonData = JSON.parse(data);
+            let flagPath = jsonData.country_flag.replace(/\\/g, "");
+
+            $("#flag").attr("src", flagPath);
+            $("#cn").text(jsonData.country_name);
+            $("#cc").text(jsonData.country_code);
+            $("#ipShow").text(jsonData.ip_address);
+
+            console.log(
+              "Data: " + JSON.parse(data).country_name + "\nStatus: " + status
+            );
+          });
+        });
+      });
+    </script>
+  </body>
+</html>
